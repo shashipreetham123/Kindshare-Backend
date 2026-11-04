@@ -22,6 +22,13 @@ const allowedOrigins = process.env.ALLOWED_CLIENTS
     : ["http://localhost:5173", "http://localhost:5174"];
 
 console.log(allowedOrigins)
+app.use(cors({
+    origin: "https://kindshare.onrender.com",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -52,7 +59,7 @@ app.use(
 
         cookie: {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: "lax",
             maxAge: 1000 * 60 * 60
         }
