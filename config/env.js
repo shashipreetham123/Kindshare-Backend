@@ -13,7 +13,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 if (!process.env.PORT) {
-    throw new Error("PORT is not Defined")
+    process.env.PORT = "3000";
 }
 
 if (!process.env.ALLOWED_CLIENTS) {

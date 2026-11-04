@@ -15,7 +15,7 @@ const authRoutes = require("./routes/auth.routes")
 const userRoutes = require("./routes/user.routes")
 const adminRoutes = require("./routes/admin.routes")
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3000
 
 const allowedOrigins = process.env.ALLOWED_CLIENTS
     ? process.env.ALLOWED_CLIENTS.split(",").map(origin => origin.trim())
@@ -23,7 +23,7 @@ const allowedOrigins = process.env.ALLOWED_CLIENTS
 
 console.log(allowedOrigins)
 
-const isProduction = process.env.NODE_ENV === "production"
+const isProduction = process.env.NODE_ENV === "production" || !!process.env.RENDER;
 
 if (isProduction) {
     app.set("trust proxy", 1)
