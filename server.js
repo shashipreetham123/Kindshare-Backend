@@ -21,6 +21,8 @@ const allowedOrigins = process.env.ALLOWED_CLIENTS
     ? process.env.ALLOWED_CLIENTS.split(",").map(origin => origin.trim())
     : ["http://localhost:5173", "http://localhost:5174"];
 
+console.log(allowedOrigins)
+
 app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (such as mobile apps or curl) or if origin is in allowedOrigins
