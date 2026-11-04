@@ -1,8 +1,5 @@
 const { getUserByUsername, toUserJSON } = require("../services/user");
 
-/**
- * Middleware to check if user is authenticated
- */
 async function checkAuth(req, res, next) {
     try {
         if (!req.session.username) {
@@ -32,9 +29,6 @@ async function checkAuth(req, res, next) {
     }
 }
 
-/**
- * Middleware to check if authenticated user is an admin
- */
 async function checkAdminAuth(req, res, next) {
     try {
         if (!req.session.username) {

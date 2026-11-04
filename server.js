@@ -31,7 +31,7 @@ if (isProduction) {
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (such as mobile apps or curl) or if origin is in allowedOrigins
+
         if (!origin || allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
@@ -43,7 +43,6 @@ app.use(cors({
 }));
 
 app.use(express.json())
-
 
 app.use(
     session({
@@ -67,7 +66,6 @@ app.use(
     })
 );
 
-
 app.use("/api/auth", authRoutes)
 app.use("/api/user", userRoutes)
 app.use("/api/admin", adminRoutes)
@@ -75,7 +73,6 @@ app.use("/api/admin", adminRoutes)
 app.get("/", (req, res) => {
     res.send("Authentication Server is Running")
 })
-
 
 async function startServer() {
     try {
@@ -88,7 +85,6 @@ async function startServer() {
         app.listen(PORT, () => {
             console.log(`Server Started at http://localhost:${PORT}/`)
         })
-
 
     } catch (error) {
 

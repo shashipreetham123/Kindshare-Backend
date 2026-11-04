@@ -20,7 +20,6 @@ router.get("/me", (req, res) => {
     })
 })
 
-// PUT /api/user/change-password - Change current user's password
 router.put("/change-password", async (req, res) => {
     try {
         const { oldPassword, newPassword, confirmPassword } = req.body

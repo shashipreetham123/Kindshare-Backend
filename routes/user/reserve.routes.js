@@ -6,7 +6,6 @@ const { handleServerError, toObjectId } = require("../../services/common")
 
 const router = express.Router()
 
-// GET /api/user/reserve - Fetches active reserves categorized for the logged-in user
 router.get("/", async (req, res) => {
     try {
         const username = req.user.username.toLowerCase().trim()
@@ -15,13 +14,10 @@ router.get("/", async (req, res) => {
         const productsCollection = db.collection("products")
         const usersCollection = db.collection("users")
 
-        // 1. Reserves where logged-in user is the donor (User as Donor)
         const asDonorDocs = await reservesCollection.find({ donorUsername: username }).sort({ reservedOn: -1 }).toArray()
 
-        // 2. Reserves where logged-in user is the beneficiary (User as Beneficiary)
         const asBeneficiaryDocs = await reservesCollection.find({ beneficiaryUsername: username }).sort({ reservedOn: -1 }).toArray()
 
-        // Gather product IDs
         const allDocs = [...asDonorDocs, ...asBeneficiaryDocs]
         const productIds = allDocs.map(d => toObjectId(d.productId)).filter(Boolean)
         const products = productIds.length > 0
@@ -32,7 +28,6 @@ router.get("/", async (req, res) => {
             productMap[String(p._id)] = p
         })
 
-        // Gather usernames to resolve contact and verification details
         const usernames = [...new Set(allDocs.flatMap(d => [d.donorUsername, d.beneficiaryUsername]).filter(Boolean))]
         const users = usernames.length > 0
             ? await usersCollection.find(
@@ -85,7 +80,6 @@ router.get("/", async (req, res) => {
     }
 })
 
-// POST /api/user/reserve/:reserveId/complete - Mark completion by donor or beneficiary
 router.post("/:reserveId/complete", async (req, res) => {
     try {
         const { reserveId } = req.params
@@ -255,7 +249,6 @@ router.delete("/", async (req, res) => {
         const productsCollection = db.collection("products")
         const historyCollection = db.collection("history")
 
-        // Retrieve existing reserve prior to cancellation for history
         const existingReserve = await reservesCollection.findOne({
             ...(filter._id ? { _id: (typeof filter._id === "string" && ObjectId.isValid(filter._id)) ? new ObjectId(filter._id) : filter._id } : {}),
             ...(filter.productId ? { productId: (typeof filter.productId === "string" && ObjectId.isValid(filter.productId)) ? new ObjectId(filter.productId) : filter.productId } : {})

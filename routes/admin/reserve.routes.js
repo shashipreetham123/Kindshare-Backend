@@ -3,7 +3,6 @@ const { handleServerError } = require("../../services/common");
 
 const router = express.Router();
 
-// GET /api/admin/reserve - Fetches all reserves
 router.get("/", async (req, res) => {
     try {
         const db = req.app.locals.db;

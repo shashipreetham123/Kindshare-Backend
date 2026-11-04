@@ -79,4 +79,3 @@ async function seedAdmin() {
 }
 
 seedAdmin();
-

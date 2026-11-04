@@ -1,7 +1,6 @@
 const { ObjectId } = require("mongodb");
 const Reserve = require("../models/Reserve");
 
-// Validates reserve data
 async function validateReserve(reserveData, productsCollection) {
     const errors = [];
 
@@ -28,7 +27,6 @@ async function validateReserve(reserveData, productsCollection) {
         errors.push("Reserve quantity must be a number greater than 0");
     }
 
-    // Check if product quantity available is greater than or equal to reserve quantity
     if (productsCollection && reserveData.productId && (typeof reserveData.productId !== "string" || ObjectId.isValid(reserveData.productId))) {
         const prodId = typeof reserveData.productId === "string" ? new ObjectId(reserveData.productId) : reserveData.productId;
         const product = await productsCollection.findOne({ _id: prodId });
@@ -49,7 +47,6 @@ async function validateReserve(reserveData, productsCollection) {
     };
 }
 
-// Converts a Reserve model or object to document for DB insertion
 function toReserveDoc(reserve) {
     return {
         productId: typeof reserve.productId === "string" && ObjectId.isValid(reserve.productId)
@@ -63,7 +60,6 @@ function toReserveDoc(reserve) {
     };
 }
 
-// Inserts a new reservation into the reserves collection and decrements product quantity
 async function createReserve(reserveData, reservesCollection, productsCollection) {
     const productId = typeof reserveData.productId === "string" && ObjectId.isValid(reserveData.productId)
         ? new ObjectId(reserveData.productId)
@@ -71,7 +67,6 @@ async function createReserve(reserveData, reservesCollection, productsCollection
 
     const reserveQuantity = Number(reserveData.quantity !== undefined ? reserveData.quantity : 1);
 
-    // Decrement product.quantity by reserveQuantity only if product.quantity >= reserveQuantity
     if (productsCollection) {
         const updateResult = await productsCollection.updateOne(
             { _id: productId, quantity: { $gte: reserveQuantity } },
@@ -108,7 +103,6 @@ async function createReserve(reserveData, reservesCollection, productsCollection
     return reserve;
 }
 
-// Converts a Reserve instance or DB document to JSON-safe object
 function toReserveJSON(reserve) {
     return {
         _id: reserve._id,
@@ -121,7 +115,6 @@ function toReserveJSON(reserve) {
     };
 }
 
-// Cancels a reservation: deletes reserve document and increments product quantity
 async function cancelReserve(filter, reservesCollection, productsCollection) {
     let query = {};
 
@@ -139,7 +132,6 @@ async function cancelReserve(filter, reservesCollection, productsCollection) {
         }
     }
 
-    // Find and delete the reservation atomically
     const reserveDoc = await reservesCollection.findOneAndDelete(query);
     const deletedReserve = reserveDoc && reserveDoc.value !== undefined ? reserveDoc.value : reserveDoc;
 
@@ -147,7 +139,6 @@ async function cancelReserve(filter, reservesCollection, productsCollection) {
         return false;
     }
 
-    // Increment product.quantity by the reserved quantity
     if (productsCollection && deletedReserve.productId) {
         const prodId = typeof deletedReserve.productId === "string" && ObjectId.isValid(deletedReserve.productId)
             ? new ObjectId(deletedReserve.productId)
@@ -164,7 +155,6 @@ async function cancelReserve(filter, reservesCollection, productsCollection) {
     return true;
 }
 
-// Marks a reserve as completed by either beneficiary or donor
 async function completeReserve({ _id, productId, username }, reservesCollection, productsCollection, requestsCollection) {
     let query = {};
 
@@ -177,7 +167,6 @@ async function completeReserve({ _id, productId, username }, reservesCollection,
 
     const normalizedUsername = username.toLowerCase().trim();
 
-    // Find the reserve
     const reserve = await reservesCollection.findOne(query);
     if (!reserve) {
         const error = new Error("Reserve not found");
@@ -204,11 +193,9 @@ async function completeReserve({ _id, productId, username }, reservesCollection,
         donorCompleted = true;
     }
 
-    // If both beneficiary and donor have confirmed completion
     if (beneficiaryCompleted && donorCompleted) {
         await reservesCollection.deleteOne({ _id: reserve._id });
 
-        // Post-completion checks:
         if (productsCollection && reserve.productId) {
             const prodId = typeof reserve.productId === "string" && ObjectId.isValid(reserve.productId)
                 ? new ObjectId(reserve.productId)
@@ -219,7 +206,6 @@ async function completeReserve({ _id, productId, username }, reservesCollection,
             if (product) {
                 const currentProductQuantity = Number(product.quantity !== undefined ? product.quantity : 0);
 
-                // 1. Delete requests wanting more quantity than product's remaining quantity
                 if (requestsCollection) {
                     await requestsCollection.deleteMany({
                         productId: prodId,
@@ -227,7 +213,6 @@ async function completeReserve({ _id, productId, username }, reservesCollection,
                     });
                 }
 
-                // 2. If product quantity is zero and no active reserves remain, delete requests and the product
                 if (currentProductQuantity === 0) {
                     const activeReservesCount = await reservesCollection.countDocuments({ productId: prodId });
 
@@ -246,7 +231,7 @@ async function completeReserve({ _id, productId, username }, reservesCollection,
             reserve: { ...reserve, beneficiaryCompleted: true, donorCompleted: true }
         };
     } else {
-        // Update reserve with the party's completion confirmation
+
         const updateFields = {};
         if (isBeneficiary) updateFields.beneficiaryCompleted = true;
         if (isDonor) updateFields.donorCompleted = true;

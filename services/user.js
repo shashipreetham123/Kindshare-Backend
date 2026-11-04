@@ -1,7 +1,6 @@
 const argon2 = require("argon2");
 const User = require("../models/User");
 
-// Normalizes user input fields
 function normalizeUser(userData) {
     return {
         ...userData,
@@ -11,17 +10,14 @@ function normalizeUser(userData) {
     };
 }
 
-// Hashes a plaintext password using argon2
 async function hashPassword(password) {
     return await argon2.hash(password);
 }
 
-// Verifies a plaintext password against a hash
 async function verifyPassword(hashedPassword, plainPassword) {
     return await argon2.verify(hashedPassword, plainPassword);
 }
 
-// Converts a User model or document to a DB-safe object
 function toUserDoc(user) {
     return {
         username: user.username,
@@ -36,7 +32,6 @@ function toUserDoc(user) {
     };
 }
 
-// Converts a user object or doc to safe JSON excluding password
 function toUserJSON(user) {
     return {
         username: user.username,
@@ -50,7 +45,6 @@ function toUserJSON(user) {
     };
 }
 
-// Creates and saves a new user in the database
 async function createUser(userData, usersCollection) {
     const normalized = normalizeUser(userData);
     const hashedPassword = await hashPassword(normalized.password);
@@ -81,7 +75,6 @@ async function createUser(userData, usersCollection) {
     return user;
 }
 
-// Finds a user by username
 async function getUserByUsername(username, usersCollection) {
     const normalizedUsername = username.toLowerCase().trim();
     const doc = await usersCollection.findOne({ username: normalizedUsername });
@@ -104,7 +97,6 @@ async function getUserByUsername(username, usersCollection) {
     );
 }
 
-// Checks if a user with the given username exists
 async function userExists(username, usersCollection) {
     const normalizedUsername = username.toLowerCase().trim();
     const doc = await usersCollection.findOne({ username: normalizedUsername });

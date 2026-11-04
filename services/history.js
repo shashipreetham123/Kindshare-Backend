@@ -1,7 +1,6 @@
 const { ObjectId } = require("mongodb");
 const History = require("../models/History");
 
-// Validates history data
 function validateHistory(historyData) {
     const errors = [];
 
@@ -23,7 +22,6 @@ function validateHistory(historyData) {
     };
 }
 
-// Adds / logs a record into the history collection
 async function addHistory({ username, event, date = new Date(), summaryShort = "", summaryLong = "" }, historyCollection) {
     if (!historyCollection) {
         return null;
@@ -56,7 +54,6 @@ async function addHistory({ username, event, date = new Date(), summaryShort = "
     return historyRecord;
 }
 
-// Retrieves history records matching the given filters, sorted newest to oldest
 async function getHistory(filter = {}, historyCollection) {
     if (!historyCollection) {
         return [];
@@ -111,7 +108,6 @@ async function getHistory(filter = {}, historyCollection) {
     ));
 }
 
-// Converts a History record or object to formatted JSON
 function toHistoryJSON(history, includeSummaryLong = true) {
     const json = {
         _id: history._id,

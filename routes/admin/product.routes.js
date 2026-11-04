@@ -5,7 +5,6 @@ const { getProduct, toProductJSON } = require("../../services/product");
 
 const router = express.Router();
 
-// GET /api/admin/product - Fetches products with support for pagination, search, quantity, sorting
 router.get("/", async (req, res) => {
     try {
         const { username, verified, listedDate, _id, name, sort, search, quantity, minQuantity, offset, limit, page } = req.query;
@@ -39,7 +38,6 @@ router.get("/", async (req, res) => {
         const total = await cursor.countTotal();
         const products = await cursor.toArray();
 
-        // Fetch verification status of donors
         const donorUsernames = [...new Set(products.map(p => p.username).filter(Boolean))];
         let verifiedMap = {};
         if (donorUsernames.length > 0) {
@@ -71,7 +69,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-// DELETE /api/admin/product/:productId - Delists a product and deletes active requests and reserves for it
 router.delete("/:productId", async (req, res) => {
     try {
         const { productId } = req.params;
@@ -98,11 +95,9 @@ router.delete("/:productId", async (req, res) => {
             });
         }
 
-        // Delete associated requests and reserves
         await requestsCollection.deleteMany({ productId: prodObjectId });
         await reservesCollection.deleteMany({ productId: prodObjectId });
 
-        // Delete product
         await productsCollection.deleteOne({ _id: prodObjectId });
 
         await addHistory({

@@ -2,7 +2,6 @@ const { ObjectId } = require("mongodb");
 const { access_level } = require("../config/constants");
 const Product = require("../models/Product");
 
-// Normalizes product fields
 function normalizeProduct(productData) {
     const images = Array.isArray(productData.images)
         ? productData.images.map(image => (typeof image === "string" ? image.toLowerCase().trim() : image))
@@ -31,7 +30,6 @@ function normalizeProduct(productData) {
     };
 }
 
-// Validates product data before insertion
 function validateProduct(productData) {
     const errors = [];
 
@@ -72,7 +70,6 @@ function validateProduct(productData) {
     };
 }
 
-// Converts a Product model or object to document for DB insertion
 function toProductDoc(product) {
     return {
         name: product.name,
@@ -86,7 +83,6 @@ function toProductDoc(product) {
     };
 }
 
-// Inserts a new product into the database
 async function createProduct(productData, productsCollection) {
     const normalized = normalizeProduct(productData);
 
@@ -111,7 +107,6 @@ async function createProduct(productData, productsCollection) {
     return product;
 }
 
-// Gets a product by ID
 async function getProductById(id, productsCollection) {
     const query = typeof id === "string" && ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
     const doc = await productsCollection.findOne(query);
@@ -133,11 +128,9 @@ async function getProductById(id, productsCollection) {
     );
 }
 
-// Gets products using filters and returns a MongoDB cursor or paginated result
 async function getProduct(filters = {}, productsCollection, usersCollection) {
     const query = {};
 
-    // 1) Search Product through name or mongodb id
     if (filters.search) {
         const term = String(filters.search).trim();
         if (ObjectId.isValid(term) && term.length === 24) {
@@ -162,18 +155,15 @@ async function getProduct(filters = {}, productsCollection, usersCollection) {
         }
     }
 
-    // 2) Search Products through Username
     if (filters.username) {
         query.username = { $regex: filters.username.toLowerCase().trim(), $options: "i" };
     }
 
-    // 3) Filter by quantity slider (min = 1)
     const minQty = Number(filters.quantity !== undefined ? filters.quantity : filters.minQuantity);
     if (!isNaN(minQty) && minQty > 0) {
         query.quantity = { $gte: minQty };
     }
 
-    // Filter products from verified users only if verified query is passed
     const shouldFilterVerified = filters.verified === true || filters.verified === "true" || filters.verified === 1 || filters.verified === "1";
     if (shouldFilterVerified) {
         const uCollection = usersCollection || (productsCollection && productsCollection.s && productsCollection.s.db ? productsCollection.s.db.collection("users") : null);
@@ -190,7 +180,6 @@ async function getProduct(filters = {}, productsCollection, usersCollection) {
         }
     }
 
-    // Compare accessLevel of product with userType
     if (filters.userType) {
         const uType = filters.userType.toLowerCase().trim();
         if (uType === "individual") {
@@ -241,7 +230,6 @@ async function getProduct(filters = {}, productsCollection, usersCollection) {
         }
     }
 
-    // Default sort by latest if none provided
     if (Object.keys(sort).length === 0) {
         sort.listedAt = -1;
     }
@@ -251,7 +239,6 @@ async function getProduct(filters = {}, productsCollection, usersCollection) {
         cursor = cursor.sort(sort);
     }
 
-    // Handle pagination offset/skip and limit
     const offset = Number(filters.offset !== undefined ? filters.offset : filters.skip);
     if (!isNaN(offset) && offset > 0) {
         cursor = cursor.skip(offset);
@@ -262,7 +249,6 @@ async function getProduct(filters = {}, productsCollection, usersCollection) {
         cursor = cursor.limit(limit);
     }
 
-    // If caller requests total count alongside, attach helper method
     cursor.countTotal = async () => {
         return await productsCollection.countDocuments(query);
     };
@@ -270,7 +256,6 @@ async function getProduct(filters = {}, productsCollection, usersCollection) {
     return cursor;
 }
 
-// Converts a product document or Product instance to JSON-safe object
 function toProductJSON(product) {
     return {
         _id: product._id,

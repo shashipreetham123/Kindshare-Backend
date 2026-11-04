@@ -242,7 +242,7 @@ async function resetAndSeedDatabase() {
         const sampleRequests = [
             {
                 _id: new ObjectId(),
-                productId: sampleProducts[0]._id, // Winter Parka
+                productId: sampleProducts[0]._id,
                 donorUsername: "sarah_gives",
                 beneficiaryUsername: "alex_shares",
                 quantity: 1,
@@ -251,7 +251,7 @@ async function resetAndSeedDatabase() {
             },
             {
                 _id: new ObjectId(),
-                productId: sampleProducts[2]._id, // Bread & Bagels
+                productId: sampleProducts[2]._id,
                 donorUsername: "city_bakery",
                 beneficiaryUsername: "user1",
                 quantity: 2,
@@ -265,7 +265,7 @@ async function resetAndSeedDatabase() {
         const sampleReserves = [
             {
                 _id: new ObjectId(),
-                productId: sampleProducts[1]._id, // Pantry Pack
+                productId: sampleProducts[1]._id,
                 donorUsername: "hope_foodbank",
                 beneficiaryUsername: "user1",
                 quantity: 2,
@@ -340,4 +340,3 @@ async function resetAndSeedDatabase() {
 }
 
 resetAndSeedDatabase();
-

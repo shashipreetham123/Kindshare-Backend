@@ -40,7 +40,6 @@ router.get("/", async (req, res) => {
         const total = await cursor.countTotal()
         const products = await cursor.toArray()
 
-        // Fetch verification status of donors for the products
         const donorUsernames = [...new Set(products.map(p => p.username).filter(Boolean))]
         let verifiedMap = {}
         if (donorUsernames.length > 0) {
@@ -72,7 +71,6 @@ router.get("/", async (req, res) => {
     }
 })
 
-// GET /api/user/product/:productId - Gets a specific product checking both productId AND username ownership
 router.get("/:productId", async (req, res) => {
     try {
         const { productId } = req.params
@@ -100,11 +98,10 @@ router.get("/:productId", async (req, res) => {
         const isOwner = product.username === req.user.username
         const isAdmin = Boolean(req.user.isAdmin)
 
-        // Check audience accessibility
         if (!isOwner && !isAdmin) {
             const uType = req.user.type ? req.user.type.toLowerCase().trim() : "individual"
             let allowed = false
-            if (product.accessLevel === 4) { // everyone
+            if (product.accessLevel === 4) {
                 allowed = true
             } else if (product.accessLevel === 1 && uType === "individual") {
                 allowed = true
@@ -124,7 +121,6 @@ router.get("/:productId", async (req, res) => {
 
         const formatted = toProductJSON(product)
 
-        // Attach verified status of donor
         const donorUser = await usersCollection.findOne({ username: product.username })
         formatted.verified = Boolean(donorUser && donorUser.verified)
 
@@ -183,7 +179,6 @@ router.post("/", async (req, res) => {
     }
 })
 
-// PUT /api/user/product (and /api/user/product/:productId) - Updates an existing product
 const handleUpdateProduct = async (req, res) => {
     try {
         const productId = req.params.productId || req.body._id || req.body.productId || req.body.id
@@ -208,7 +203,6 @@ const handleUpdateProduct = async (req, res) => {
             })
         }
 
-        // Authorization check: User must own the product or be an admin
         const isOwner = existing.username === req.user.username
         const isAdmin = Boolean(req.user.isAdmin)
         if (!isOwner && !isAdmin) {
@@ -220,11 +214,10 @@ const handleUpdateProduct = async (req, res) => {
 
         const { name, description, quantity, available, coverImage, accessLevel, images } = req.body
 
-        // Construct update candidate merging existing fields
         const candidateData = {
             name: name !== undefined ? name : existing.name,
             description: description !== undefined ? description : existing.description,
-            username: existing.username, // Username is immutable
+            username: existing.username,
             quantity: quantity !== undefined ? quantity : available !== undefined ? available : existing.quantity,
             coverImage: coverImage !== undefined ? coverImage : existing.coverImage,
             accessLevel: accessLevel !== undefined ? accessLevel : existing.accessLevel,
@@ -274,7 +267,6 @@ const handleUpdateProduct = async (req, res) => {
 router.put("/", handleUpdateProduct)
 router.put("/:productId", handleUpdateProduct)
 
-// DELETE /api/user/product (and /api/user/product/:productId) - Deletes a product
 const handleDeleteProduct = async (req, res) => {
     try {
         const productId = req.params.productId || req.body._id || req.body.productId || req.body.id || req.query.productId || req.query._id || req.query.id
@@ -301,7 +293,6 @@ const handleDeleteProduct = async (req, res) => {
             })
         }
 
-        // Authorization check: User must own the product or be an admin
         const isOwner = existing.username === req.user.username
         const isAdmin = Boolean(req.user.isAdmin)
         if (!isOwner && !isAdmin) {
@@ -311,7 +302,6 @@ const handleDeleteProduct = async (req, res) => {
             })
         }
 
-        // Clean up associated requests and reserves
         if (requestsCollection) {
             await requestsCollection.deleteMany({ productId: prodObjectId })
         }

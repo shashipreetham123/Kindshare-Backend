@@ -8,13 +8,12 @@ async function seedComprehensiveInventory() {
         const productsCol = db.collection('products');
         const usersCol = db.collection('users');
 
-        // Target active accounts that you or the user test with
         const targetUsers = ['admin', 'user1', 'test'];
 
         console.log('Seeding rich inventory items for users:', targetUsers);
 
         const sampleItems = [
-            // Items for admin
+
             {
                 name: 'Emergency Thermal Blankets (Box of 20)',
                 description: 'Heavy duty, windproof and moisture-resistant thermal survival blankets for local shelter warming drives.',
@@ -64,7 +63,6 @@ async function seedComprehensiveInventory() {
                 listedAt: new Date(Date.now() - 3600000 * 30)
             },
 
-            // Items for user1
             {
                 name: 'Men Winter Down Parka (Size L)',
                 description: 'Insulated down weather-resistant parka jacket, clean and sanitized, excellent condition for cold seasons.',
@@ -114,7 +112,6 @@ async function seedComprehensiveInventory() {
                 listedAt: new Date(Date.now() - 3600000 * 40)
             },
 
-            // Items for test
             {
                 name: 'Children Illustrated Reading Books Set',
                 description: 'Collection of 12 engaging adventure and science picture books for ages 5-10, gentle condition.',

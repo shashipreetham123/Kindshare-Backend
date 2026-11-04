@@ -1,7 +1,6 @@
 const { ObjectId } = require("mongodb");
 const Request = require("../models/Request");
 
-// Validates request data
 async function validateRequest(requestData, productsCollection) {
     const errors = [];
 
@@ -32,7 +31,6 @@ async function validateRequest(requestData, productsCollection) {
         errors.push("Requested quantity must be a number greater than 0");
     }
 
-    // Check if product quantity available is greater than or equal to requested quantity
     if (productsCollection && requestData.productId && (typeof requestData.productId !== "string" || ObjectId.isValid(requestData.productId))) {
         const prodId = typeof requestData.productId === "string" ? new ObjectId(requestData.productId) : requestData.productId;
         const product = await productsCollection.findOne({ _id: prodId });
@@ -53,7 +51,6 @@ async function validateRequest(requestData, productsCollection) {
     };
 }
 
-// Creates and inserts a Request into the database
 async function createRequest(requestData, requestsCollection) {
     const productId = typeof requestData.productId === "string" && ObjectId.isValid(requestData.productId)
         ? new ObjectId(requestData.productId)
@@ -82,7 +79,6 @@ async function createRequest(requestData, requestsCollection) {
     return request;
 }
 
-// Deletes a request by criteria or ID
 async function deleteRequest(filter, requestsCollection) {
     let query = {};
 
@@ -104,7 +100,6 @@ async function deleteRequest(filter, requestsCollection) {
     return result.deletedCount > 0;
 }
 
-// Converts a Request to a JSON-safe response object
 function toRequestJSON(request) {
     return {
         _id: request._id,

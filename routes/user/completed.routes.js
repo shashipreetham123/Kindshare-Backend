@@ -32,7 +32,6 @@ router.post("/", async (req, res) => {
             const prodId = result.reserve.productId
             const reserveId = result.reserve._id
 
-            // Record history for beneficiary
             await addHistory({
                 username: beneficiary,
                 event: "completed",
@@ -40,7 +39,6 @@ router.post("/", async (req, res) => {
                 summaryLong: `Reservation ID ${reserveId} for product ID ${prodId} marked as completed by both beneficiary "${beneficiary}" and donor "${donor}".`
             }, historyCollection)
 
-            // Record history for donor
             await addHistory({
                 username: donor,
                 event: "completed",

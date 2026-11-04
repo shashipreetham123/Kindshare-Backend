@@ -12,7 +12,6 @@ router.get("/", async (req, res) => {
         const db = req.app.locals.db
         const historyCollection = db.collection("history")
 
-        // Build matching count query to know total available records
         const query = { username: username.toLowerCase().trim() }
         if (event) {
             query.event = typeof event === "string" ? { $regex: new RegExp(event, "i") } : event
@@ -29,7 +28,6 @@ router.get("/", async (req, res) => {
             historyCollection
         )
 
-        // For individual users, provide summaryShort (hide summaryLong)
         const formattedHistory = historyRecords.map(item => toHistoryJSON(item, false))
 
         const currentOffset = offset !== undefined && !isNaN(Number(offset)) ? Math.max(0, parseInt(offset, 10)) : 0

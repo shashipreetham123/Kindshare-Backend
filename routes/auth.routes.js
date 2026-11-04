@@ -27,7 +27,6 @@ router.post("/login", validation, requestValidation, async (req, res) => {
         if (isValid) {
             req.session.username = user.username;
 
-            // Explicitly save the session before responding to ensure cookie & session are written
             req.session.save((err) => {
                 if (err) {
                     console.error("Session save error:", err);

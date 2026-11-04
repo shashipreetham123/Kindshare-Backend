@@ -44,3 +44,8 @@ Thumbs.db
 
 # Debug files
 .npm
+
+reset_and_seed.js
+seed_admin.js
+seed_inventory.js
+seed_products.js

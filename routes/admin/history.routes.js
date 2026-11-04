@@ -4,7 +4,6 @@ const { handleServerError } = require("../../services/common");
 
 const router = express.Router();
 
-// GET /api/admin/history - Total history or filtered by query parameters
 router.get("/", async (req, res) => {
     try {
         const { username, event, startDate, endDate } = req.query;
@@ -24,7 +23,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-// GET /api/admin/history/:username - Dedicated endpoint to fetch history by username
 router.get("/:username", async (req, res) => {
     try {
         const username = req.params.username;

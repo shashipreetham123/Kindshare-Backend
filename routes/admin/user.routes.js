@@ -6,7 +6,6 @@ const { registerValidation, requestValidation } = require("../../middleware/vali
 
 const router = express.Router();
 
-// GET /api/admin/user - Fetches all users (excluding passwords)
 router.get("/", async (req, res) => {
     try {
         const db = req.app.locals.db;
@@ -21,7 +20,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-// POST /api/admin/user - Creates a user with or without admin privileges
 router.post("/", registerValidation, requestValidation, async (req, res) => {
     try {
         const { username, password, type, phoneNumber, countryCode, address, email, isAdmin, verified } = req.body;
@@ -66,7 +64,6 @@ router.post("/", registerValidation, requestValidation, async (req, res) => {
     }
 });
 
-// PUT /api/admin/user/:username/verify - Verifies a user (or toggles via body { verified: boolean })
 router.put("/:username/verify", async (req, res) => {
     try {
         const username = normalizeUsername(req.params.username);
@@ -109,7 +106,6 @@ router.put("/:username/verify", async (req, res) => {
     }
 });
 
-// PUT /api/admin/user/:username/unverify - Explicit endpoint to unverify a user
 router.put("/:username/unverify", async (req, res) => {
     try {
         const username = normalizeUsername(req.params.username);
@@ -150,7 +146,6 @@ router.put("/:username/unverify", async (req, res) => {
     }
 });
 
-// DELETE /api/admin/user/:username - Deletes user and cascades deletion to products, requests, reserves
 router.delete("/:username", async (req, res) => {
     try {
         const targetUsername = normalizeUsername(req.params.username);
@@ -170,7 +165,6 @@ router.delete("/:username", async (req, res) => {
             });
         }
 
-        // Find and cascade delete all products owned by this user
         const userProducts = await productsCollection.find({ username: targetUsername }).toArray();
         const productIds = userProducts.map(p => p._id);
 
@@ -180,7 +174,6 @@ router.delete("/:username", async (req, res) => {
             await productsCollection.deleteMany({ _id: { $in: productIds } });
         }
 
-        // Also clean up any requests and reserves where user was beneficiary or donor
         await requestsCollection.deleteMany({
             $or: [
                 { beneficiaryUsername: targetUsername },
@@ -194,7 +187,6 @@ router.delete("/:username", async (req, res) => {
             ]
         });
 
-        // Delete user
         await usersCollection.deleteOne({ username: targetUsername });
 
         await addHistory({

@@ -7,7 +7,6 @@ const { handleServerError, toObjectId } = require("../../services/common")
 
 const router = express.Router()
 
-// GET /api/user/request - Fetches requests categorized for the logged-in user
 router.get("/", async (req, res) => {
     try {
         const username = req.user.username.toLowerCase().trim()
@@ -16,13 +15,10 @@ router.get("/", async (req, res) => {
         const productsCollection = db.collection("products")
         const usersCollection = db.collection("users")
 
-        // 1. Requests where logged-in user is the donor (User as Donor)
         const asDonorDocs = await requestsCollection.find({ donorUsername: username }).sort({ requestedOn: -1 }).toArray()
 
-        // 2. Requests where logged-in user is the beneficiary (User as Beneficiary)
         const asBeneficiaryDocs = await requestsCollection.find({ beneficiaryUsername: username }).sort({ requestedOn: -1 }).toArray()
 
-        // Gather all referenced product IDs
         const allDocs = [...asDonorDocs, ...asBeneficiaryDocs]
         const productIds = allDocs.map(d => toObjectId(d.productId)).filter(Boolean)
         const products = productIds.length > 0
@@ -33,7 +29,6 @@ router.get("/", async (req, res) => {
             productMap[String(p._id)] = p
         })
 
-        // Gather usernames to resolve verification status
         const usernames = [...new Set(allDocs.flatMap(d => [d.donorUsername, d.beneficiaryUsername]).filter(Boolean))]
         const users = usernames.length > 0
             ? await usersCollection.find({ username: { $in: usernames } }, { projection: { username: 1, verified: 1 } }).toArray()
@@ -71,7 +66,6 @@ router.get("/", async (req, res) => {
     }
 })
 
-// POST /api/user/request/:requestId/accept - Donor accepts request -> creates reservation, decrements product stock, removes request
 router.post("/:requestId/accept", async (req, res) => {
     try {
         const { requestId } = req.params
@@ -91,7 +85,6 @@ router.post("/:requestId/accept", async (req, res) => {
             return res.status(404).json({ message: "Request not found", data: null })
         }
 
-        // Must be the donor or admin
         const isDonor = requestDoc.donorUsername === req.user.username
         const isAdmin = Boolean(req.user.isAdmin)
         if (!isDonor && !isAdmin) {
@@ -116,7 +109,6 @@ router.post("/:requestId/accept", async (req, res) => {
 
         const reserve = await createReserve(reserveData, reservesCollection, productsCollection)
 
-        // Remove request after successfully creating reserve
         await requestsCollection.deleteOne({ _id: reqObjectId })
 
         await addHistory({
@@ -135,7 +127,6 @@ router.post("/:requestId/accept", async (req, res) => {
     }
 })
 
-// POST /api/user/request/:requestId/decline - Donor declines request -> removes request and logs history
 router.post("/:requestId/decline", async (req, res) => {
     try {
         const { requestId } = req.params
@@ -247,7 +238,6 @@ router.delete("/", async (req, res) => {
         const requestsCollection = db.collection("requests")
         const historyCollection = db.collection("history")
 
-        // Retrieve the request document prior to deletion if possible for rich history details
         const existingRequest = await requestsCollection.findOne({
             ...(filter._id ? { _id: (typeof filter._id === "string" && ObjectId.isValid(filter._id)) ? new ObjectId(filter._id) : filter._id } : {}),
             ...(filter.productId ? { productId: (typeof filter.productId === "string" && ObjectId.isValid(filter.productId)) ? new ObjectId(filter.productId) : filter.productId } : {})
@@ -281,7 +271,6 @@ router.delete("/", async (req, res) => {
     }
 })
 
-// DELETE /api/user/request/:requestId - Direct cancellation by requestId
 router.delete("/:requestId", async (req, res) => {
     try {
         const { requestId } = req.params
@@ -299,7 +288,6 @@ router.delete("/:requestId", async (req, res) => {
             return res.status(404).json({ message: "Request not found or already deleted", data: null })
         }
 
-        // Beneficiary who created it, or donor, or admin can cancel
         const isBeneficiary = existingRequest.beneficiaryUsername === req.user.username
         const isDonor = existingRequest.donorUsername === req.user.username
         const isAdmin = Boolean(req.user.isAdmin)

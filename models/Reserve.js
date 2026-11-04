@@ -1,7 +1,7 @@
 const Request = require("./Request")
 
 class Reserve {
-    // Initializes a new reservation from a request and optional quantity
+
     constructor(request, quantity = undefined) {
         this.productId = request.productId
         this.beneficiaryUsername = request.beneficiaryUsername
