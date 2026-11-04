@@ -27,13 +27,20 @@ router.post("/login", validation, requestValidation, async (req, res) => {
         if (isValid) {
             req.session.username = user.username;
 
-            return res.status(200).json({
-                message: "Login Successful",
-                data: {
-                    username: user.username,
-                    isAdmin: !!user.isAdmin
+            // Explicitly save the session before responding to ensure cookie & session are written
+            req.session.save((err) => {
+                if (err) {
+                    console.error("Session save error:", err);
+                    return handleServerError(res, err, "Session creation failed");
                 }
-            })
+                return res.status(200).json({
+                    message: "Login Successful",
+                    data: {
+                        username: user.username,
+                        isAdmin: !!user.isAdmin
+                    }
+                });
+            });
         } else {
             return res.status(401).json({
                 message: "Username or Password is Incorrect. Authentication Failed",
