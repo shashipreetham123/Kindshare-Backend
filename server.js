@@ -22,13 +22,12 @@ const allowedOrigins = process.env.ALLOWED_CLIENTS
     : ["http://localhost:5173", "http://localhost:5174"];
 
 console.log(allowedOrigins)
-app.use(cors({
-    origin: "https://kindshare.onrender.com",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
 
+const isProduction = process.env.NODE_ENV === "production"
+
+if (isProduction) {
+    app.set("trust proxy", 1)
+}
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -38,7 +37,9 @@ app.use(cors({
         }
         return callback(new Error("Not allowed by CORS"));
     },
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json())
@@ -59,12 +60,13 @@ app.use(
 
         cookie: {
             httpOnly: true,
-            secure: true,
+            secure: false,
             sameSite: "lax",
             maxAge: 1000 * 60 * 60
         }
     })
 );
+
 
 app.use("/api/auth", authRoutes)
 app.use("/api/user", userRoutes)
